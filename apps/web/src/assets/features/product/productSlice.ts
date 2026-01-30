@@ -1,4 +1,8 @@
-import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import {
+  createSlice,
+  createAsyncThunk,
+  type PayloadAction,
+} from "@reduxjs/toolkit";
 
 export interface Product {
   id: string;
@@ -45,7 +49,24 @@ export const fetchProductById = createAsyncThunk(
 export const productSlice = createSlice({
   name: "product",
   initialState,
-  reducers: {},
+  reducers: {
+    applyStockUpdate: (
+      state,
+      action: PayloadAction<Array<{ productId: string; quantity: number }>>
+    ) => {
+      action.payload.forEach((item) => {
+        const product = state.products.find(
+          (entry) => entry.id === item.productId
+        );
+        if (product) {
+          product.stock = Math.max(0, product.stock - item.quantity);
+        }
+        if (state.product?.id === item.productId) {
+          state.product.stock = Math.max(0, state.product.stock - item.quantity);
+        }
+      });
+    },
+  },
   extraReducers: (builder) => {
     builder
       .addCase(fetchProducts.pending, (state) => {
@@ -84,5 +105,7 @@ export const productSlice = createSlice({
       });
   },
 });
+
+export const { applyStockUpdate } = productSlice.actions;
 
 export default productSlice.reducer;
