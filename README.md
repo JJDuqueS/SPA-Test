@@ -10,3 +10,7 @@ checkout-demo/
   docker/
   README.md
   docker-compose.yml
+
+## Comandos:
+
+# npm run start
