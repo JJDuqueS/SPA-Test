@@ -1,0 +1,15 @@
+{
+  "name": "spa-test",
+  "private": true,
+  "version": "0.0.0",
+  "scripts": {
+    "start": "concurrently -n api,web,docker -c blue,green,magenta \"npm run start:api\" \"npm run start:web\" \"npm run start:docker\"",
+    "start:api": "npm --prefix apps/api run start",
+    "start:web": "npm --prefix apps/web run start",
+    "start:docker": "docker compose up -d",
+    "stop:docker": "docker compose down"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.0"
+  }
+}
