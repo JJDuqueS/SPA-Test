@@ -85,6 +85,7 @@ export const checkoutSlice = createSlice({
       state.card = action.payload;
     },
     addToCart: (state, action: PayloadAction<CartItem>) => {
+      if (!state.cart) state.cart = [];
       const existing = state.cart.find(
         (item) => item.productId === action.payload.productId
       );
@@ -98,6 +99,7 @@ export const checkoutSlice = createSlice({
       state,
       action: PayloadAction<{ productId: string; quantity: number }>
     ) => {
+      if (!state.cart) state.cart = [];
       const item = state.cart.find(
         (entry) => entry.productId === action.payload.productId
       );
@@ -105,6 +107,7 @@ export const checkoutSlice = createSlice({
       item.quantity = Math.max(1, action.payload.quantity);
     },
     removeFromCart: (state, action: PayloadAction<string>) => {
+      if (!state.cart) state.cart = [];
       state.cart = state.cart.filter(
         (item) => item.productId !== action.payload
       );

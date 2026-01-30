@@ -16,8 +16,8 @@ import {
   updateCartQuantity,
 } from "../features/checkout/checkoutSlice";
 
-const BASE_FEE_CENTS = 900;
-const DELIVERY_FEE_CENTS = 1500;
+const BASE_FEE_CENTS = 100;
+const DELIVERY_FEE_CENTS = 1400;
 const API_URL = import.meta.env.VITE_API_URL ?? "";
 const WOMPI_ENDPOINT = import.meta.env.VITE_WOMPI_ENDPOINT ?? "";
 
@@ -162,7 +162,7 @@ const tryWompiPayment = async (payload: Record<string, unknown>) => {
 
 const ProductPage = () => {
   const dispatch = useAppDispatch();
-  const { products: storeProducts, loading } = useAppSelector(
+  const { products: storeProducts, loading, error } = useAppSelector(
     (state) => state.product
   );
   const checkout = useAppSelector((state) => state.checkout);
@@ -190,10 +190,10 @@ const ProductPage = () => {
   }, [dispatch]);
 
   useEffect(() => {
-    if (storeProducts.length === 0 && !loading && API_URL) {
+    if (storeProducts.length === 0 && !loading && !error && API_URL) {
       dispatch(fetchProducts());
     }
-  }, [dispatch, loading, storeProducts.length]);
+  }, [dispatch, loading, error, storeProducts.length]);
 
   const cartQuantityById = useMemo(() => {
     return cart.reduce<Record<string, number>>((acc, item) => {

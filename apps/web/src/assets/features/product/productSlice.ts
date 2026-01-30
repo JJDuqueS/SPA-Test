@@ -27,7 +27,9 @@ const initialState: ProductState = {
 export const fetchProducts = createAsyncThunk("product/fetchAll", async () => {
   const res = await fetch(`${import.meta.env.VITE_API_URL}/products`);
   const data = await res.json();
-  return data;
+  if (Array.isArray(data)) return data;
+  if (Array.isArray(data?.products)) return data.products;
+  return [];
 });
 
 // Async thunk to fetch product by id
