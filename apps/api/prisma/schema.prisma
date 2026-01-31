@@ -16,6 +16,7 @@ model Product {
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
   transactions Transaction[]
+  transactionItems TransactionItem[]
 }
 
 model Customer {
@@ -62,6 +63,7 @@ model Transaction {
   customer     Customer          @relation(fields: [customerId], references: [id])
   delivery     Delivery?         @relation(fields: [deliveryId], references: [id])
   product      Product           @relation(fields: [productId], references: [id])
+  items        TransactionItem[]
 }
 
 enum TransactionStatus {
@@ -69,4 +71,20 @@ enum TransactionStatus {
   APPROVED
   DECLINED
   ERROR
+}
+
+model TransactionItem {
+  id            String      @id @default(cuid())
+  transactionId String
+  productId     String
+  name          String
+  imageUrl      String?
+  priceCents    Int
+  quantity      Int
+  createdAt     DateTime    @default(now())
+  transaction   Transaction @relation(fields: [transactionId], references: [id])
+  product       Product     @relation(fields: [productId], references: [id])
+
+  @@index([transactionId])
+  @@index([productId])
 }
