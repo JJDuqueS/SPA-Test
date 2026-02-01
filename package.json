@@ -7,7 +7,13 @@
     "start:api": "npm --prefix apps/api run start",
     "start:web": "npm --prefix apps/web run start",
     "start:docker": "docker compose up -d",
-    "stop:docker": "docker compose down"
+    "stop:docker": "docker compose down",
+    "lint": "npm run lint:api && npm run lint:web",
+    "lint:fix": "npm run lint:api:fix && npm run lint:web:fix",
+    "lint:api": "npm --prefix apps/api run lint",
+    "lint:api:fix": "npm --prefix apps/api run lint:fix",
+    "lint:web": "npm --prefix apps/web run lint",
+    "lint:web:fix": "npm --prefix apps/web run lint:fix"
   },
   "devDependencies": {
     "concurrently": "^9.2.0"
