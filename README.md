@@ -1,163 +1,238 @@
-# SPA-Test
-
-## Estructura TODO
-checkout-demo/
-  apps/
-    web/        # React
-    api/        # NestJS
-  packages/
-    shared/     # types (zod schemas, dtos), helpers Result
-  docker/
-  README.md
-  docker-compose.yml
-
-## Comandos:
-
-### npm run start
-
-## Data model design (PostgreSQL / Prisma)
-
-- Product: catalog items with priceCents, stock, imageUrl.
-- Customer: buyer identity (fullName, email, phone).
-- Delivery: address data plus feeCents, linked to Customer.
-- Transaction: payment intent with reference, status, amountCents, baseFeeCents,
-  card metadata, linked to Customer and Delivery.
-- TransactionItem: line items for a Transaction (productId, quantity, priceCents,
-  snapshot name/image).
-  
 # Fullstack Checkout Demo (SPA)
 
-Este proyecto es una **Single Page Application (SPA)** que implementa un flujo completo de checkout y pago de productos, desde la selección hasta la confirmación final de la transacción, incluyendo control de stock y manejo de errores.
+A **Single Page Application (SPA)** that implements an end‑to‑end checkout and payment flow, from product selection to final transaction confirmation, including stock control and error handling.
 
-Fue desarrollado como **prueba técnica backend-oriented**, pero con un frontend funcional y testeado, y está pensado para ser parte de mi **portafolio personal**, reflejando decisiones reales de arquitectura, testing y diseño de sistemas.
-
----
-
-## 🧩 Descripción general
-
-El sistema permite:
-
-1. Listar y seleccionar productos con stock disponible.
-2. Ingresar información de tarjeta (fake pero válida) y datos de entrega.
-3. Mostrar un resumen de pago (producto + fees).
-4. Procesar el pago (simulado).
-5. Mostrar el estado final de la transacción y actualizar el stock.
-
-El flujo es **resiliente a refresh**, recuperando el progreso del usuario cuando es posible.
+This project was built as a **backend‑oriented technical challenge**, while still delivering a fully functional and tested frontend. It reflects real‑world architectural decisions, testing strategies, and system design trade‑offs.
 
 ---
 
-## 🛠️ Stack tecnológico
+## 📁 Monorepo Structure
+
+```text
+checkout-demo/
+  apps/
+    web/        # React SPA (Frontend)
+    api/        # NestJS API (Backend)
+  packages/
+    shared/     # Shared types, Zod schemas, DTOs, Result helpers
+  docker/
+  docker-compose.yml
+  README.md
+```
+
+---
+
+## ▶️ Getting Started
+
+### Run the project
+
+```bash
+npm run start
+```
+
+> This command boots the required services using Docker and starts both the frontend and backend.
+
+---
+
+## 🧠 Domain & Data Model (PostgreSQL + Prisma)
+
+The data model was designed to closely represent a real checkout domain while keeping the scope focused.
+
+### Core entities
+
+- **Product**
+  - Catalog items
+  - `priceCents`, `stock`, `imageUrl`
+
+- **Customer**
+  - Buyer identity
+  - `fullName`, `email`, `phone`
+
+- **Delivery**
+  - Shipping and address information
+  - `feeCents`
+  - Linked to a `Customer`
+
+- **Transaction**
+  - Payment intent
+  - `reference`, `status`, `amountCents`, `baseFeeCents`
+  - Card metadata snapshot
+  - Linked to `Customer` and `Delivery`
+
+- **TransactionItem**
+  - Line items within a transaction
+  - `productId`, `quantity`, `priceCents`
+  - Snapshot of product `name` and `image`
+
+> Stock updates are only applied after an **APPROVED** transaction.
+
+---
+
+## 🧩 Functional Overview
+
+The system allows a user to:
+
+1. Browse available products with real stock visibility.
+2. Enter credit card (fake but structurally valid) and delivery information.
+3. Review a payment summary (product + base fee + delivery fee).
+4. Execute a simulated payment.
+5. View the final transaction result and updated stock.
+
+The checkout flow is **resilient to page refreshes**, restoring progress whenever possible.
+
+---
+
+## 🛠️ Technology Stack
 
 ### Frontend
+
 - **React + TypeScript**
 - **Vite**
-- **TailwindCSS**
+- **Tailwind CSS**
 - **Redux Toolkit**
 - **redux-persist**
-- **Vitest** (tests unitarios)
+- **Vitest** (unit tests)
 
 ### Backend
+
 - **NestJS**
 - **TypeScript**
 - **PostgreSQL**
-- **Prisma ORM (v7, usando `prisma.config.ts`)**
-- **Jest** (tests unitarios)
+- **Prisma ORM (v7, using `prisma.config.ts`)**
+- **Jest** (unit tests)
 
 ---
 
-## 🏗️ Arquitectura
+## 🏗️ Architecture Decisions
+
+### Backend Architecture
+
+The backend follows a **Hexagonal Architecture (Ports & Adapters)** approach:
+
+- Thin controllers responsible only for HTTP transport.
+- Business logic encapsulated in **Use Cases**.
+- Infrastructure concerns (Prisma, external services) isolated behind adapters.
+- Explicit and consistent error handling.
+- Use cases tested in isolation.
+
+Additionally, the system is inspired by **Railway Oriented Programming (ROP)**:
+
+- Explicit state transitions.
+- Early exit on invalid states.
+- Errors modeled as part of the flow rather than exceptions.
+
+### Frontend Architecture
+
+Although the focus is backend‑heavy, the frontend maintains clear separation of concerns:
+
+- Redux slices implemented as pure state logic.
+- Checkout helpers written as deterministic, testable functions.
+- UI components kept intentionally simple, with minimal business logic.
+
+---
+
+## 💳 Payment Simulation (Important Note)
+
+As part of the original requirements, sandbox credentials were provided to integrate with the **Wompi API**.
+
+Attempts were made to complete a real integration:
+
+- Official documentation was reviewed.
+- Provided sandbox credentials were configured.
+- The full payment flow was implemented and tested.
+
+However, the sandbox credentials did not respond correctly, and no confirmation was received after attempting to contact support.
+
+### Design Decision
+
+Rather than blocking the project, a **payment simulation layer** was implemented:
+
+- Mimics the real structure of a payment provider response.
+- Fully deterministic and test‑friendly.
+- Automatic fallback when the external provider fails.
+- Supports `APPROVED`, `DECLINED`, and `ERROR` scenarios.
+
+This decision prioritizes:
+
+- System robustness
+- Testability
+- Clear business flow representation
+
+---
+
+## 🔄 Business Flow (High Level)
+
+1. `GET /products` – List available products.
+2. `POST /checkout/start` – Create a `PENDING` transaction.
+3. Execute payment simulation (or real provider if available).
+4. `POST /checkout/pay` – Update transaction state.
+5. Update product stock only if transaction is `APPROVED`.
+
+---
+
+## 🧪 Testing Strategy
 
 ### Backend
-El backend sigue una aproximación **Hexagonal (Ports & Adapters)** con énfasis en:
 
-- Controllers delgados (solo transporte HTTP).
-- Lógica de negocio encapsulada en **Use Cases**.
-- Servicios de infraestructura (Prisma) desacoplados.
-- Manejo consistente de errores.
-- Casos de uso testeados de forma aislada.
-
-También se aplica una aproximación inspirada en **Railway Oriented Programming (ROP)**:
-- Las transiciones de estado son explícitas.
-- Los flujos de error están modelados y testeados.
-- Los casos inválidos se detienen temprano.
+- Unit tests with **Jest**.
+- Controllers tested with mocked services.
+- Use cases tested as pure business logic.
+- Coverage includes:
+  - Happy paths
+  - Error cases
+  - Domain invariants (state transitions, stock rules)
 
 ### Frontend
-Aunque el enfoque principal es backend, el frontend también mantiene una separación clara:
-- Redux slices como lógica de estado pura.
-- Helpers de checkout testeados como funciones determinísticas.
-- Componentes UI simples, sin lógica de negocio compleja.
+
+- Redux slices tested as pure reducers.
+- Checkout helpers tested as deterministic logic.
+- Network error fallback tests.
+- One end‑to‑end navigation flow test for the full checkout.
+
+### Coverage
+
+- **Backend**: > 80%
+- **Frontend**: > 80%
+
+> The goal was not to maximize test count, but to cover **critical domain behavior**.
 
 ---
 
-## 💳 Simulación de pagos (nota importante)
+## 🧪 Development Utilities
 
-Dentro de los requerimientos se proporcionaron credenciales para consumir la **API Sandbox de Wompi**.
+### Prisma
 
-Se intentó realizar la integración real:
-- Se revisó la documentación oficial.
-- Se configuraron las credenciales proporcionadas.
-- Se intentó validar el flujo completo.
+```bash
+npm run prisma:migrate
+npm run prisma:seed
+```
 
-Sin embargo, **no fue posible completar la integración**, ya que las credenciales de sandbox no respondían correctamente. Se intentó contactar por correo para confirmar el acceso, pero no se obtuvo respuesta.
+### Backend (development mode)
 
-### Decisión tomada
-
-En lugar de bloquear el proyecto, se diseñó una **capa de simulación de pagos**, con las siguientes características:
-
-- Mantiene la **estructura real** de una respuesta de proveedor.
-- Es **determinística** (ideal para tests).
-- Incluye **fallback automático** cuando el backend de pagos falla.
-- Permite simular estados `APPROVED`, `DECLINED` y `ERROR`.
-
-Esta decisión fue tomada de forma consciente, priorizando:
-- Robustez del sistema.
-- Testabilidad.
-- Claridad del flujo de negocio.
-
----
-
-## 🔄 Flujo de negocio (alto nivel)
-
-1. `GET /products` – listar productos.
-2. `POST /checkout/start` – crea transacción `PENDING`.
-3. Simulación de pago (o backend real si estuviera disponible).
-4. `POST /checkout/pay` – actualiza la transacción.
-5. Actualización de stock solo en caso `APPROVED`.
-
----
-
-## 🧪 Estrategia de testing
-
-### Backend
-- Tests unitarios con **Jest**.
-- Controllers testeados con servicios mockeados.
-- Use cases testeados como lógica pura.
-- Cobertura de:
-  - Casos felices
-  - Casos de error
-  - Invariantes de dominio (estados, stock, transiciones)
-
-### Frontend
-- Redux slices testeados como reducers puros.
-- Helpers de checkout testeados como lógica de negocio.
-- Tests de fallback ante errores de red.
-- Un test de flujo de navegación (checkout completo).
-
-### Cobertura
-- Backend: **>80%**
-- Frontend: **>80%**
-
-> El objetivo no fue maximizar el número de tests, sino cubrir **comportamientos críticos del dominio**.
-
----
-
-## ▶️ Cómo correr el proyecto localmente
-
-### Backend
 ```bash
 cd apps/api
 npm install
-npm run prisma:migrate
-npm run prisma:seed
 npm run start:dev
+```
+
+---
+
+## 📌 Notes
+
+- Product creation endpoints were intentionally omitted; products are seeded.
+- Credit card data is **never persisted** beyond simulated metadata.
+- The project avoids vendor‑specific naming and keeps providers abstracted.
+
+---
+
+## ✅ Summary
+
+This project demonstrates:
+
+- A realistic checkout domain modeled with care.
+- Backend‑first architecture with strong separation of concerns.
+- Deterministic and resilient payment handling.
+- High‑value testing focused on domain behavior.
+
+It is designed to be easy to reason about, easy to test, and easy to extend.
+
