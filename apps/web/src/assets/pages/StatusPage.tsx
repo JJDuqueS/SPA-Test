@@ -1,4 +1,4 @@
-﻿import React, { useEffect } from "react";
+﻿import { useEffect } from "react";
 import "./ProductPage.css";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "../app/hooks";

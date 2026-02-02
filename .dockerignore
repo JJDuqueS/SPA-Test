@@ -1,0 +1,17 @@
+.git
+.DS_Store
+
+**/node_modules
+**/dist
+**/coverage
+**/.cache
+**/.tmp
+**/.vite
+**/.vite-temp
+
+**/*.log
+**/npm-debug.log*
+
+**/.env
+**/.env.*
+
