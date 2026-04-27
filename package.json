@@ -3,6 +3,9 @@
   "private": true,
   "version": "0.0.0",
   "scripts": {
+    "install": "npm run install:api && npm run install:web",
+    "install:api": "npm --prefix apps/api install",
+    "install:web": "npm --prefix apps/web install",
     "start": "concurrently -n api,web,docker -c blue,green,magenta \"npm run start:api\" \"npm run start:web\" \"npm run start:docker\"",
     "start:api": "npm --prefix apps/api run start",
     "start:web": "npm --prefix apps/web run start",

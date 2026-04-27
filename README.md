@@ -24,6 +24,13 @@ checkout-demo/
 
 ## ▶️ Getting Started
 
+### Install the project
+
+```bash
+npm run install
+```
+> This command installs the required packages in both the frontend and backend.
+
 ### Run the project
 
 ```bash
